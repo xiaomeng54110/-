@@ -1,0 +1,59 @@
+# and型信号量解决哲学家就餐问题
+import time
+import threading
+
+
+class Philosophy(threading.Thread):
+    def __init__(self, key, lefthand, righthand, hungry):
+        threading.Thread.__init__(self)
+        self.key = key  # 哲学家编号
+        self.lefthand = lefthand  # True表示哲学家左手拿起筷子,False表示哲学家左手没有拿起筷子
+        self.righthand = righthand
+        self.hungry = hungry  # True表示哲学家饿了
+
+    def pick(self):
+        threadLock.acquire()
+        if chopsticks[self.key] and chopsticks[(self.key + 1) % 5] and not self.lefthand and not self.righthand and self.hungry:  # 可以拿筷子
+            time.sleep(5)
+            chopsticks[(self.key + 1) % 5] = False
+            self.lefthand = True
+            print('哲学家%s拿起了左边的筷子！' % self.key)
+            time.sleep(5)
+            chopsticks[self.key] = False  # 哲学家的筷子被拿
+            self.righthand = True  # 哲学家右手拿起筷子
+            print('哲学家%s拿起了右边的筷子！' % self.key)
+        threadLock.release()
+
+    def eat(self):
+        if self.lefthand and self.righthand and self.hungry:  # 可以开始吃饭
+            time.sleep(5)
+            print('哲学家%s开始吃饭' % self.key)
+            time.sleep(5)
+            print('哲学家%s吃完饭了' % self.key)
+            self.hungry = False
+            time.sleep(5)
+            print('哲学家%s放下筷子开始思考' % self.key)
+            self.lefthand = False  # 哲学家左手放下筷子
+            self.righthand = False  # 哲学家右手放下筷子
+            chopsticks[self.key] = True  # 哲学家的筷子可以用
+            chopsticks[(self.key + 1) % 5] = True  # 哲学家右边的筷子可以用
+
+    def run(self):
+        while True:
+            self.pick()
+            self.eat()
+
+
+threadLock = threading.Lock()
+chopsticks = [True, True, True, True, True]
+philosophy0 = Philosophy(0, False, False, True)
+philosophy1 = Philosophy(1, False, False, True)
+philosophy2 = Philosophy(2, False, False, True)
+philosophy3 = Philosophy(3, False, False, True)
+philosophy4 = Philosophy(4, False, False, True)
+
+philosophy4  .start()
+philosophy1.start()
+philosophy2.start()
+philosophy3.start()
+philosophy0.start()
